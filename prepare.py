@@ -1,8 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 
 from env import user, host, password
+
+import sklearn.preprocessing
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 
@@ -115,6 +119,32 @@ def split_data(df):
 
     return train, validate, test
 
+
+###################### Function To Remove Outliers ###########################
+
+def delete_outliers(df):
+    '''
+    Given the amount of outliers in the data we want to use this function to remove 
+    them. 
+    
+    This function will remove any values that are 3 points outside the 
+    absolute value of the z-score
+    '''
+    ## retains values < 3 z-score of the mean for square_feet column
+    trimmed_df = df = df[(np.abs(stats.zscore(df['square_feet'])) < 3)]
+    
+    ## retains values < 3.5 z-score of the mean for baths column
+    trimmed_df = df[(np.abs(stats.zscore(df['baths'])) < 3)]
+    
+    ## retains values < 3.5 z-score of the mean for beds column
+    trimmed_df = df[(np.abs(stats.zscore(df['beds'])) < 3)]
+    
+    ## retains values < 3.5 z-score of the mean for tax_value column
+    trimmed_df = df[(np.abs(stats.zscore(df['tax_value'])) < 3)]
+    
+    return trimmed_df
+
+
 ###################### Function To Get County Names ###########################
 
 
@@ -151,12 +181,7 @@ def create_features(df):
     acres
     acres_bin
     sqft_bin
-    structure_dollar_per_sqft
-    structure_dollar_per_sqft
-    land_dollar_per_sqft
-    lot_dollar_sqft_bin
     bed_bath_ratio
-    cola
     '''
     df['age'] = 2017 - df.yearbuilt
     df['age_bin'] = pd.cut(df.age, 
@@ -181,35 +206,28 @@ def create_features(df):
                                     12000],
                             labels = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9])
 
-    # dollar per square foot-structure
-    df['structure_dollar_per_sqft']=df.structuretaxvaluedollarcnt/df.calculatedfinishedsquarefeet
-
-
-    df['structure_dollar_sqft_bin'] = pd.cut(df.structure_dollar_per_sqft, 
-                                             bins = [0, 25, 50, 75, 100, 150, 200, 300, 500, 1000,
-                                                     1500],
-                                             labels = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9])
-
-
-    # dollar per square foot-land
-    df['land_dollar_per_sqft'] = df.landtaxvaluedollarcnt/df.lotsizesquarefeet
-
-    df['lot_dollar_sqft_bin'] = pd.cut(df.land_dollar_per_sqft, bins = [0, 1, 5, 20, 50, 100, 
-                                                                        250, 500, 1000, 
-                                                                        1500, 2000],
-                                       labels = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9])
-
 
     # update datatypes of binned values to be float
-    df = df.astype({'sqft_bin': 'float64', 'acres_bin': 'float64', 'age_bin': 'float64',
-                    'structure_dollar_sqft_bin': 'float64', 'lot_dollar_sqft_bin': 'float64'})
+    df = df.astype({'sqft_bin': 'float64', 'acres_bin': 'float64', 'age_bin': 'float64',})
 
 
     # ratio of bathrooms to bedrooms
     df['bath_bed_ratio'] = df.bathroomcnt/df.bedroomcnt
 
-    # 12447 is the ID for city of LA. 
-    # I confirmed through sampling and plotting, as well as looking up a few addresses.
-    df['cola'] = df['regionidcity'].apply(lambda x: 1 if x == 12447.0 else 0)
-
     return df
+
+
+###################### Function To Perform a Min Max Scalar ###########################
+
+def Min_Max_Scaler(X_train, X_validate, X_test):
+    """
+    Takes in X_train, X_validate and X_test dfs with numeric values only
+    Returns scaler, X_train_scaled, X_validate_scaled, X_test_scaled dfs 
+    """
+    scaler = sklearn.preprocessing.MinMaxScaler().fit(X_train)
+    X_train_scaled = pd.DataFrame(scaler.transform(X_train), index = X_train.index, columns = X_train.columns)
+    X_validate_scaled = pd.DataFrame(scaler.transform(X_validate), index = X_validate.index,     
+                                     columns= X_validate.columns)
+    X_test_scaled = pd.DataFrame(scaler.transform(X_test), index = X_test.index, columns = X_test.columns)
+    
+    return scaler, X_train_scaled, X_validate_scaled, X_test_scaled
