@@ -148,7 +148,7 @@ def delete_outliers(df):
 ###################### Function To Get County Names ###########################
 
 
-def get_counties():
+def get_counties(df):
     '''
     This function will create dummy variables out of the original fips column. 
     And return a dataframe with all of the original columns except regionidcounty.
@@ -156,15 +156,12 @@ def get_counties():
     New columns added will be 'LA', 'Orange', and 'Ventura' which are boolean 
     The fips ids are renamed to be the name of the county each represents. 
     '''
-    # create dummy vars of fips id
-    county_df = pd.get_dummies(df.fips)
-    # rename columns by actual county name
-    county_df.columns = ['LA', 'Orange', 'Ventura']
-    # concatenate the dataframe with the 3 county columns to the original dataframe
-    df_dummies = pd.concat([df, county_df], axis = 1)
-    # drop regionidcounty and fips columns
-    df_dummies = df_dummies.drop(columns = ['regionidcounty'])
-    return df_dummies
+    ## Making county column based on fips column using the associated ID's
+
+    df['county'] = df['fips'].map({6037: 'Los Angeles', 
+                                             6059: 'Orange', 
+                                             6111: 'Ventura'})
+    return df
 
 ###################### Function To Create More features ###########################
 
