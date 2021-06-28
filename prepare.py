@@ -9,6 +9,7 @@ import sklearn.preprocessing
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -105,6 +106,22 @@ def handle_missing_values(df, prop_required_column = .5, prop_required_row = .5)
     return df
 
 
+############### Function to filter through rest of nulls ###################
+
+def complete_prep(df):
+    '''
+    This function has been created to reduce the remaining null values to 0 in the dataframe after nulls_by_row
+    and column nulls functions
+    '''
+    
+    df.drop(columns = ['heatingorsystemtypeid', 'buildingqualitytypeid',
+                                      'propertyzoningdesc', 'unitcnt', 
+                                      'heatingorsystemdesc'])
+    df = df.dropna()
+
+    return df
+
+
 ###################### Function To Split Data ###########################
 
 def split_data(df):
@@ -118,6 +135,44 @@ def split_data(df):
     train, validate = train_test_split(train_validate, test_size=0.3, random_state=123)
 
     return train, validate, test
+
+###################### Function To Scale X dataframe's Data ###########################
+
+def standard_data_scale(X_train, X_validate, X_test):
+    '''
+    This function is designed to use a standard scaler on our split train, validate, and test dataframes and return X_scaled 
+    dataframes for train, validate, and test
+    '''
+    
+    scaler = StandardScaler().fit(X_train)
+    X_train_scaled = pd.DataFrame(scaler.transform(X_train), index = X_train.index, columns = X_train.columns)
+    X_validate_scaled = pd.DataFrame(scaler.transform(X_validate), index = X_validate.index, columns = X_validate.columns)
+    X_test_scaled = pd.DataFrame(scaler.transform(X_test), index = X_test.index, columns = X_test.columns)
+    return X_train_scaled, X_validate_scaled, X_test_scaled
+
+
+
+def get_object_cols(df):
+    '''
+    This function is designed to recognize all the columns that are objects in the dataframe 
+    '''
+    # make a mask for object columns
+    mask = np.array(df.dtypes == "object")
+
+        
+    # make a list of object columns
+    object_cols = df.iloc[:, mask].columns.tolist()
+    
+    return object_cols
+
+def get_numeric_cols(X_train, object_cols):
+    '''
+    uses object column function to pull out all the numeric columns 
+    '''
+    numeric_cols = [col for col in X_train.columns.values if col not in object_cols]
+    
+    return numeric_cols
+
 
 
 ###################### Function To Remove Outliers ###########################

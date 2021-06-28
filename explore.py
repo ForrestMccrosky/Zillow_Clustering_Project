@@ -11,8 +11,6 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import seaborn as sns
 
-import viz_kmeans
-import wrangle
 from pydataset import data
 
 np.set_printoptions(suppress=True)
@@ -62,4 +60,8 @@ def create_scatter_plot(x,y,df,kmeans, X_scaled, scaler):
     sns.scatterplot(x = x, y = y, data = df, hue = 'cluster')
     centroids = pd.DataFrame(scaler.inverse_transform(kmeans.cluster_centers_), columns=X_scaled.columns)
     centroids.plot.scatter(y=y, x= x, ax=plt.gca(), alpha=.30, s=500, c='black')
+    
+
+
+
 
