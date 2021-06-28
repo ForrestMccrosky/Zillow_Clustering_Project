@@ -1,7 +1,7 @@
 # Zillow Clustering Project: Predicting LogError 
 
 ## Project Description
- - This purpose of this project is to create a Regression model with the help of clustering that predicts that log error of single unit properties purchased in 2017
+ - This purpose of this project is to create a Regression model with the help of clustering that predicts the log error of single unit properties purchased in 2017
  - Project created using the data science pipeline (Acquisition, Preparation, Exploration, Analysis & Statistical Testing, and finally Modeling and Evaluation)
 
 ## Project Goals
@@ -14,27 +14,28 @@
 ## Deliverables
  - Final Jupyter Notebook
  - Function Files for reproduction
- - Trello Board (Agenda Board)
  - Detailed Readme
  
 
 ## Executive Summary
- - Predict Log Error of Single Unit Properties purchased in 2017 using Regression Models with the help of clustering (KMeans)
- - Target variable: log_error
- -
- -
- -
+The purpose of this notebook is create a regression model with the help of using Kmeans clusters to predicts the logerror of Zillow homes in a tri-county area of California (Los Angeles County, Orange County, and Ventrua County
 
-## Hypothesis
+The data is filtered to specifically look at single unit properies in this area that were sold during the year of 2017
+
+We used 4 base features (longitude, age, calculatefinishedsquarefeet, and latitude) as well as a Kmeans cluster feature made from taxamount and longitude
+
+Our Baseline Median RMSE: 0.1727
+Our best model on was our Tweedie Regressor model that our performed the baseline with an RMSE of 0.1698
+
 
 
 ## Findings & Takeaways
-
+ - The Tweedie Regressor Model performed the best on validate and was chosen to be used on the test dataset
+ - The Tweedie Regressor Model evaluated with an RMSE of 0.16975 and an R squared value of 0.0017
+ - Looking at the test residual plot we can see a grouping of closer predictions when the logerror is closer to 0 than the points further away. This may be due to other factors that were not looked into such as extensive interiors and other accessories
+ - With more time I would like to look into more clusters to help improve my models and find mroe features to improve model performance
 
 # The Pipeline
-
-## Planninng
-
 
 
 ## Acquire
@@ -50,16 +51,18 @@ A SQL query was also written to filter that data to the scope of the project. Us
 Many columns were outputted into the dataframe with the SQL I had written. In order to make this project smoother I first started by dropping the unneccessary columns.
 
 The zillow database had some null values and outliers. In order to prepare for explore these were addressed by being removed from the dataframe. 
- - Outliers were addressed using standard deviation, anything outside the absolute value of 3 was dropped
- - Null values were also dropped because there were only 143 null values after column filtering. Which is a small percentage compared to the 38 thousand rowed dataframe
- - A min max scalar was also applied to our X datasets after the target variable was seperated into Y's
+ - Null values are plentiful in this dataframe and were addressed by dropping most of them, but we retained the columns that were hypothesized to have the most impact on the target variable logerror
 
 ## Explore
 
 The goal of explore is to visualize data relationships and perform statistical testing to determine if the features the project plans on using have a significant relationship with the target variable.
 ### Correlation Tests
-
-### T and P Tests
+ - Correlation tests were performed on all hypothesized variables to determine if there relationships are actually significant to the target variable logerror
+ - All tests returned p-values that were less than our alpha of 0.05 allowing us to confirm the there is a significant relationship and move forward with feature selection for the model.
+### Tailed T Tests
+ - Used our manually made bins to perform one tailed and two tailed t- test
+ - Both tests returned p value's less than our alpha of 0.05 
+ - This means that the variables do effect each othere and are not independent of one another
 
 
 ### Visualizations Used
@@ -73,30 +76,51 @@ The goal of explore is to visualize data relationships and perform statistical t
 The goal of the modeling and evalutaion component of the pipeline is to use the best features determined from explore to predict our target variable log_error
 
 ### Features Used in Modeling
+ - Longitude
+ - Age
+ - Cluster (Cluster made using KMeans from taxamount & longitude)
 
 ### Model Performance
+ - OLS Train RMSE: 0.17208
+ - OLS Validate RMSE: 0.18536
+ - LassoLars Train RMSE: 0.17229
+ - LassoLars Validate RMSE: 0.18539
+ - TweedieRegressor Train RMSE: 0.17208
+ - TweedieRegressor Validate RMSE: 0.18536
+ - PolynomialRegression 2 Degrees Train RMSE: 0.17159
+ - PolynomialRegression 2 Degrees Validate RMSE: 0.19053
 
 
-### Test on ???
-
+### Test on TweedieRegressor
+ - We used the Tweedie Regressor on our test set because it performed the best compared to the other models.
+ - Tweedie Regressor Test RMSE: 0.16983
 
 ### This is better than our baseline
+- This is better than both the mean and median baseline. Which is a Success!!
 
 ## Data Dictionary
 
-| Column Name                  | Renamed Column | Info / Value                                                                                                 |
-|------------------------------|----------------|--------------------------------------------------------------------------------------------------------------|
-| parcelid                     | dropped: N/A   | unique ID for the property                                                                                   |
-| bathroomcnt                  | baths          | property bathroom count                                                                                      |
-| bedroomcnt                   | beds           | property bedroom count                                                                                       |
-| calculatedfinishedsquarefeet | square_feet    | total square feet of the property                                                                            |
-| fips                         | dropped: N/A   | county code for property                                                                                     |
-| propertylandusetypeid        | dropped: N/A   | Id for type of property: Used in SQL query to filter for single unit properties                              |
-| yearbuilt                    | dropped: N/A   | year property was built                                                                                      |
-| taxvaluedollarcnt            | tax_value      | properties tax value in dollars                                                                              |
-| transactiondate              | dropped: N/A   | day property was purchased: Used in SQL query to filter to correct timeframe within the scope of the project |
-| taxamount                    | tax_amount     | amount of tax on properties value                                                                            |
-| tax_rate                     | tax_rate       | the tax rate on the property                                                                                 |
+| Column Name                  | Info                    | Value                                                                        |
+|------------------------------|-------------------------|------------------------------------------------------------------------------|
+| bathroomcnt                  | float                   | count of the property bathrooms                                              |
+| bedroomcnt                   | float                   | count of the property bedrooms                                               |
+| latitude                     | float                   | geolocation value (x-value of earth) of the property                         |
+| longitude                    | float                   | geolocation value (y-value of earth) of the property                         |
+| taxamount                    | float                   | amount of tax on properties value                                            |
+| logerror                     | float                   | amount of error from the zestimate of the home value                         |
+| yearbuilt                    | float                   | year property was built                                                      |
+| age                          | float                   | today's date minus year built (age of property)                              |
+| age_bin                      | float                   | manually created bins for different ages of property                         |
+| taxrate                      | float                   | the tax rate on the property                                                 |
+| county                       | object                  | county where property is located (Orange, Ventura, Los Angeles)              |
+| calculatedfinishedsquarefeet | float                   | total square feet of the property                                            |
+| bath_bed_ratio               | float                   | amount of property bathrooms divided by bedrooms                             |
+| sqft_bin                     | float                   | manually created bins for different square feet categories of the properties |
+| acres_bin                    | float                   | manually created bins for the different acre values of the properties        |
+| cluster                      | object changed to float | cluster created using Kmeans from taxamount and longitude                    |
+| cluster1                     | object changed to float | cluster created using Kmeans from latitude and longitude                     |
+| cluster2                     | object changed to float | cluster created using Kmeans from age and calculatedfinishedsquarefeet       |
+| acres                        | float                   | amount of acres of the property (square feet / 43560)                        |
 
 
 ## Project Recreation
