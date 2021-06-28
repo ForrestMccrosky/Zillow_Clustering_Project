@@ -81,19 +81,19 @@ The goal of the modeling and evalutaion component of the pipeline is to use the 
  - Cluster (Cluster made using KMeans from taxamount & longitude)
 
 ### Model Performance
- - OLS Train RMSE: 0.17208
- - OLS Validate RMSE: 0.18536
- - LassoLars Train RMSE: 0.17229
- - LassoLars Validate RMSE: 0.18539
- - TweedieRegressor Train RMSE: 0.17208
- - TweedieRegressor Validate RMSE: 0.18536
- - PolynomialRegression 2 Degrees Train RMSE: 0.17159
- - PolynomialRegression 2 Degrees Validate RMSE: 0.19053
+| Model                            | RMSE Train Score | RMSE Validate Score | R-squared |
+|----------------------------------|------------------|---------------------|-----------|
+| Baseline Mean                    | 0.1727           | 0.1856              | -0.00013  |
+| Baseline Median                  | 0.1716           | 0.1905              | -0.00013  |
+| OLS LinearRegression             | 0.17208          | 0.18536             | 0.00026   |
+| LassoLars                        | 0.17229          | 0.18539             | -0.00013  |
+| TweedieRegressor                 | 0.17208          | 0.18535             | 0.00031   |
+| PolynomialRegression (3 degrees) | 0.17159          | 0.19053             | -0.05626  |
 
 
 ### Test on TweedieRegressor
- - We used the Tweedie Regressor on our test set because it performed the best compared to the other models.
  - Tweedie Regressor Test RMSE: 0.16983
+ - Tweedie Regressor Test R-squared: 0.0008
 
 ### This is better than our baseline
 - This is better than both the mean and median baseline. Which is a Success!!
